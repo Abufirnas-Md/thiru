@@ -11,6 +11,21 @@
     overflow: hidden;
     background: #1a0a00;
   }
+  body {
+    height: 100vh; /* 100% of viewport height */
+    width: 100%;
+    background-image: url('your-image.jpg'); /* Replace with your image path */
+    background-size: cover; /* Scale image to cover entire area */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent tiling */
+    background-attachment: fixed; /* Optional: keeps image fixed on scroll */
+    font-family: Arial, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
 
   .bg-temple {
     position: absolute; inset: 0;
@@ -369,8 +384,8 @@
         <span class="lamp">🪔</span>
         <div class="lamp-line"></div>
       </div>
-      <div class="title-main">THIRU-BOT</div>
-      <div class="title-tamil">திரு-பாட்</div>
+      <div class="title-main">THIRU</div>
+      <div class="title-tamil">திரு</div>
       <div class="status-tag">TAMIL DIALECT VOICE RECOGNITION</div>
       <div class="divider"></div>
       <div style="margin-bottom:12px;">
@@ -417,7 +432,7 @@
       <span class="permission-icon">🎙️</span>
       <div class="title-main" style="font-size:20px;margin-bottom:10px;">MICROPHONE ACCESS</div>
       <div class="permission-text">
-        திரு-பாட்டிற்கு உங்கள் குரலை கேட்க<br>மைக்ரோஃபோன் அனுமதி தேவை.<br><br>
+        திரு உங்கள் குரலை கேட்க<br>மைக்ரோஃபோன் அனுமதி தேவை.<br><br>
         <span style="color:rgba(212,160,23,0.7);font-size:11px;">(Thiru-Bot needs microphone access to hear your voice)</span>
       </div>
       <button class="btn-gold" onclick="requestMic()">🎤 அனுமதி அளிக்கவும்</button>
@@ -525,7 +540,7 @@
     </div>
   </div>
 
-  <div class="footer-note">✦ THIRU-BOT © MOHAMMED ABUFIRNAS ✦ தமிழ் கலாச்சாரம் வாழட்டும் ✦</div>
+  <div class="footer-note">✦ THIRU © MOHAMMED ABUFIRNAS ✦ தமிழ் கலாச்சாரம் வாழட்டும் ✦</div>
 </div>
 
 <script>
@@ -685,7 +700,7 @@ const MEANING_MAP = [
   { patterns: ['enna','என்ன'], actions: ['panra','பண்ற','pannu'], std: 'நீ என்ன செய்கிறாய்?', eng: 'What are you doing?', conf: 89 },
   { patterns: ['vaa','வா'], actions: [], std: 'வாருங்கள்!', eng: 'Come here!', conf: 91 },
   { patterns: ['po','போ'], actions: [], std: 'போகுங்கள்!', eng: 'Go away!', conf: 90 },
-  { patterns: ['pakka','பக்கா'], actions: [], std: 'உண்மையான / தரமான', eng: 'Genuine / Quality stuff', conf: 93 },
+  { patterns: ['pakka','பக்கா'], actions: [], std: ' தரமான', eng: 'Quality stuff', conf: 93 },
   { patterns: ['traffic','ட்ராஃபிக்'], actions: [], std: 'வழியில் நெரிசல் உள்ளது', eng: 'Traffic is heavy / crowded', conf: 94 },
   { patterns: ['cinema','சினிமா'], actions: ['pannatha','பண்ணாத'], std: 'நாடகம் ஆடாதே', eng: 'Stop being dramatic!', conf: 89 },
   { patterns: ['velai','வேலை'], actions: ['pannu','பண்ணு'], std: 'வேலை செய்யுங்கள்', eng: 'Do your work!', conf: 92 },
