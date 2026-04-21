@@ -391,9 +391,13 @@
       <div class="creator-name" style="color:#FF6B00;font-size:17px;margin-bottom:12px;">முகமது அபுஃபிர்னாஸ்</div>
       <div class="divider"></div>
       <div class="about-text">
-        <p>"தமிழ் கலாச்சாரத்தை உலகம் முழுவதும் கொண்டு செல்லும் வகையில் குரல் அங்கீகார (Voice Recognition) இணையதளத்தை உருவாக்கியவர் முகமது அபுஃபிர்னாஸ். தொழில்நுட்பம் வெறும் கருவிகளோடு நின்றுவிடாமல், நம் மண்ணின் மொழியையும், வட்டார வழக்குகளையும் (Dialects) பிரதிபலிக்க வேண்டும் என்பதில் இவர் மிகுந்த ஆர்வம் கொண்டவர்.</p>
+        <p> வணக்கம், நான் முகமது அபுபிர்னாஸ்.
+          <br> தொழில்நுட்பம் என்பது உலகளாவிய மொழியாக இருக்கலாம், ஆனால் அது பேசும் விதம் நம் மண்ணின் வாசனையோடு இருக்க வேண்டும் என்று நான் எப்போதும் விரும்புவேன். அதற்காகவே, தமிழ் கலாச்சாரத்தைப் பிரதிபலிக்கும் வகையில் ஒரு குரல் அங்கீகார இணையதளத்தை ஏற்கனவே உருவாக்கியிருந்தேன். அதன் அடுத்த கட்டமாக உருவானதுதான் இந்த 'திரு' (The Thiru). </p>
         <br>
-        <p>திருச்சியின் தனித்துவமான பேச்சு வழக்கு முதல் சென்னையின் மெட்ராஸ் பாஷை வரை, தமிழின் பன்முகத்தன்மையை நவீன செயற்கை நுண்ணறிவுடன் (AI) இணைப்பதே இவரது இலக்கு. இந்த 'திரு-பாட்' (Thiru-Bot) திட்டம், வெறும் இயந்திரக் குரலாக இல்லாமல், நம் வீட்டு உறுப்பினரைப் போல நம் மொழியைப் புரிந்து செயல்படும் ஒரு முயற்சியாகும்."</p>
+        <p> பொதுவாக நாம் பயன்படுத்தும் அலெக்சா (அலெக்சா) அல்லது சிரி (சிரி) போன்ற கருவிகள் ஆங்கிலத்திலோ அல்லது மிகத் தெளிவான செந்தமிழிலோ பேசினால் மட்டுமே புரிந்து கொள்ளும். ஆனால், நம் நிஜ வாழ்க்கையில் நாம் அப்படியா பேசுகிறோம்? திருச்சியில் ஒரு விதம், சென்னையில் ஒரு விதம் என ஊருக்கு ஊர் நம் தமிழ் மாறுபடுகிறது.
+நம் வீட்டுப் பெரியவர்கள் 'லைட்டப் போடுப்பா' என்றோ அல்லது 'ஃபேன்-அ ஆஃப் பண்ணு' என்றோ இயல்பாகச் சொல்லும் போது, ​​அதை ஒரு இயந்திரம் புரிந்து கொள்ள வேண்டும் என்பதே எனது நோக்கம். அதற்காகவே 'Edge AI' தொழில்நுட்பத்தைப் பயன்படுத்தி, வட்டார வழக்குகளை அடையாளம் காணும் வகையில் இந்தச் சாதனத்தை வடிவமைத்துள்ளேன்.
+ஒரு முக்கியமான குறிப்பு: இது தற்போது ஒரு முன்மாதிரி (முன்மாதிரி) மட்டுமே. எனவே, சில நேரங்களில் குரலைப் புரிந்துகொள்வதில் தவறுகள் நடக்கலாம் அல்லது சிறிய தொழில்நுட்பச் சிக்கல்கள் உள்ளன. வரும் காலங்களில் உங்கள் கருத்துக்களைக் கொண்டு இதில் பல மாற்றங்களையும் முன்னேற்றங்களையும் செய்யத் திட்டமிட்டுள்ளேன்.
+தமிழைத் தொழில்நுட்பத்தோடு இணைக்கும் இந்தப் பயணத்தில் உங்கள் ஆதரவிற்கு மிக்க நன்றி</p>
       </div>
       <div class="divider"></div>
       <button class="btn-gold" onclick="askMicPermission()">✦ தொடரவும் ✦</button>
@@ -625,20 +629,20 @@ function handleResult(event) {
 
 const DIALECT_DATA = {
   chennai: {
-    slang: ['da','di','nu','ey','macha','poda','thaavani','machan','seri','ya','dei','aama','illa','paru','paa'],
+    slang: ['da','di','area naanta','ey','macha','poda','saavukraaki','porambokku','seri','thala','dei','aama','illa','paru','paa'],
     label: 'மெட்ராஸ் பாஷை'
   },
   coimbatore: {
-    slang: ['baa','nga','ra','le','appidi','eppidi','solla','pannuvaa','covai'],
+    slang: ['baa','nga','ra','rendyume','poduvaanugo','eppidi','solla','pannuvaa','covai'],
     label: 'கோவை தமிழ்'
   },
   madurai: {
-    slang: ['nee','sollu','pannu','vaa','po','thevidiya','onum','illai','maama','paaru'],
+    slang: ['nee','sollu','pannu','vaa','po','neenga podra porula saptu vaala avasiyam illa dei','onum','illai','maama','paaru'],
     label: 'மதுரை தமிழ்'
   },
-  thanjavur: {
-    slang: ['raa','nee','sollu','ey','namma','thanjavur','koil','da'],
-    label: 'தஞ்சாவூர் தமிழ்'
+  thirunelveli: {
+    slang: ['eley','yemla','loosaala','anguttu ponga la','aamaa la','thirnaveli vaanga lae','koilku poromla','seri lei'],
+    label: 'திருநெல்வேலி தமிழ்'
   },
   trichy: {
     slang: ['ra','ba','sollunga','pannunga','enna','trichy','thiruchy','inga','anga'],
@@ -648,7 +652,7 @@ const DIALECT_DATA = {
     slang: ['nee','naan','vaa','po','choll','achan','amma','dee','kanyakumari','south'],
     label: 'கன்னியாகுமரி தமிழ்'
   },
-  palakkad: {
+  kerala_palakkad: {
     slang: ['alle','athe','ente','poda','vaa','kerala','palakkad','aane','undo'],
     label: 'பாலக்காடு தமிழ்'
   },
