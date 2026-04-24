@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Thiru – Tamil Dialect Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Tamil:ital@0;1&family=Cinzel:wght@400;600;700&family=Noto+Sans+Tamil:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#D4A017;
+  --orange:#FF6B00;
+  --dark:#0d0500;
+  --card-bg:rgba(10,4,0,0.82);
+  --text-warm:rgba(255,220,150,0.92);
+}
+html,body{
+  width:100%;min-height:100%;
+  font-family:'Noto Sans Tamil',sans-serif;
+  background:#0d0500;
+  overflow-x:hidden;
+}
+
+/* ── BACKGROUND ─────────────────────────────────── */
+#bg{
+  position:fixed;inset:0;z-index:0;
+  background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Brihadeeswarar_Temple_02.jpg/1280px-Brihadeeswarar_Temple_02.jpg') center/cover no-repeat;
+}
+/* The user's uploaded image will be injected via JS as a data-URI */
+#bg.custom-bg{background-size:cover;background-position:center center;}
+
+#bg-overlay{
+  position:fixed;inset:0;z-index:1;
+  background:
+    linear-gradient(to bottom,rgba(8,3,0,0.78) 0%,rgba(8,3,0,0.52) 40%,rgba(8,3,0,0.72) 100%),
+    radial-gradient(ellipse at 60% 80%,rgba(180,90,20,0.30) 0%,transparent 60%);
+}
+
+/* ── KOLAM BORDER ────────────────────────────────── */
+.kolam-top,.kolam-bot{
+  position:fixed;left:0;right:0;height:5px;z-index:100;
+  background:repeating-linear-gradient(90deg,#8B4513 0px,#D4A017 40px,#FF6B00 80px,#D4A017 120px,#8B4513 160px);
+}
+.kolam-top{top:0;}
+.kolam-bot{bottom:0;}
+
+/* ── LAYOUT ──────────────────────────────────────── */
+#app{
+  position:relative;z-index:2;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px 12px 30px;
+}
+
+.screen{width:100%;max-width:580px;display:none;animation:fadeUp .55s ease both;}
+.screen.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CARD ────────────────────────────────────────── */
+.card{
+  background:rgba(8,3,0,0.80);
+  border:1px solid rgba(212,160,23,0.38);
+  border-radius:18px;
+  padding:26px 24px 28px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 0 48px rgba(212,160,23,0.12),inset 0 0 60px rgba(0,0,0,0.25);
+  position:relative;
+}
+
+/* ── TYPOGRAPHY ──────────────────────────────────── */
+.title-en{
+  font-family:'Cinzel',serif;font-size:clamp(20px,5vw,28px);
+  font-weight:700;color:var(--gold);text-align:center;letter-spacing:3px;
+  text-shadow:0 0 28px rgba(212,160,23,0.55);margin-bottom:3px;
+}
+.title-ta{
+  font-family:'Tiro Tamil',serif;font-size:clamp(17px,4vw,22px);
+  color:var(--orange);text-align:center;text-shadow:0 0 18px rgba(255,107,0,0.45);
+  margin-bottom:18px;
+}
+.subtitle{
+  font-size:11px;letter-spacing:2px;color:rgba(212,160,23,0.55);
+  text-align:center;text-transform:uppercase;margin-bottom:14px;
+}
+.gold{color:var(--gold);}
+.orange{color:var(--orange);}
+
+/* ── DIVIDER & LAMP ──────────────────────────────── */
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(212,160,23,0.45),transparent);margin:14px 0;}
+.lamp-row{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:14px;}
+.lamp-line{height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(212,160,23,0.45),transparent);}
+.lamp{font-size:20px;}
+
+/* ── STATUS TAG ──────────────────────────────────── */
+.tag{
+  display:inline-block;background:rgba(212,160,23,0.10);
+  border:1px solid rgba(212,160,23,0.28);border-radius:20px;
+  padding:3px 14px;font-size:10px;color:rgba(212,160,23,0.75);
+  letter-spacing:1.5px;margin-bottom:14px;
+}
+
+/* ── BUTTONS ─────────────────────────────────────── */
+.btn-gold{
+  display:block;width:fit-content;margin:18px auto 0;
+  background:linear-gradient(135deg,#8B4513,#D4A017 50%,#FF6B00);
+  border:none;color:#0d0500;font-family:'Cinzel',serif;
+  font-size:12px;font-weight:700;letter-spacing:2px;
+  padding:12px 34px;border-radius:30px;cursor:pointer;
+  transition:transform .25s,box-shadow .25s;
+  box-shadow:0 4px 20px rgba(212,160,23,0.35);
+}
+.btn-gold:hover{transform:scale(1.04);box-shadow:0 6px 28px rgba(212,160,23,0.55);}
+.btn-ghost{
+  background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.25);
+  color:rgba(212,160,23,0.7);font-size:11px;letter-spacing:1px;
+  padding:5px 14px;border-radius:20px;cursor:pointer;transition:all .2s;
+}
+.btn-ghost:hover{background:rgba(212,160,23,0.18);color:var(--gold);}
+
+/* ── ABOUT TEXT ──────────────────────────────────── */
+.about-text{font-size:13px;line-height:1.85;color:var(--text-warm);text-align:left;}
+.creator-heading{font-size:15px;font-weight:500;color:var(--gold);text-align:center;margin-bottom:8px;}
+
+/* ── STEP DOTS ───────────────────────────────────── */
+.steps{display:flex;gap:7px;justify-content:center;margin-bottom:16px;}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(212,160,23,0.22);border:1px solid rgba(212,160,23,0.38);transition:background .3s;}
+.dot.on{background:var(--gold);}
+
+/* ── MIC PERMISSION ──────────────────────────────── */
+.perm-icon{font-size:46px;display:block;text-align:center;margin-bottom:10px;}
+.perm-text{font-size:13px;color:var(--text-warm);line-height:1.75;text-align:center;margin-bottom:14px;}
+#mic-msg{min-height:20px;font-size:12px;text-align:center;margin-top:10px;}
+
+/* ── DIALECT GRID ────────────────────────────────── */
+.dialect-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;margin:14px 0 4px;
+}
+@media(max-width:400px){.dialect-grid{grid-template-columns:repeat(2,1fr);}}
+.d-btn{
+  background:rgba(20,8,0,0.78);border:1px solid rgba(212,160,23,0.25);
+  border-radius:10px;padding:9px 5px;color:var(--text-warm);
+  font-family:'Noto Sans Tamil',sans-serif;font-size:11px;
+  cursor:pointer;text-align:center;transition:all .22s;line-height:1.4;
+}
+.d-btn:hover,.d-btn.sel{
+  background:rgba(212,160,23,0.16);border-color:var(--gold);
+  color:var(--gold);transform:scale(1.04);
+}
+.d-btn .icon{font-size:14px;display:block;margin-bottom:2px;}
+.d-btn small{font-size:9px;opacity:.55;}
+
+/* ── VOICE SCREEN ────────────────────────────────── */
+.back-btn{
+  position:absolute;top:13px;left:14px;
+}
+.dialect-badge{
+  display:inline-block;padding:2px 10px;border-radius:10px;
+  font-size:10px;background:rgba(255,107,0,0.18);
+  border:1px solid rgba(255,107,0,0.38);color:var(--orange);margin-left:6px;
+}
+.mic-ring{
+  width:82px;height:82px;border-radius:50%;
+  background:rgba(212,160,23,0.10);border:2px solid rgba(212,160,23,0.45);
+  display:flex;align-items:center;justify-content:center;
+  margin:4px auto 14px;cursor:pointer;transition:all .3s;position:relative;
+}
+.mic-ring:hover{background:rgba(212,160,23,0.2);border-color:var(--gold);}
+.mic-ring.rec{border-color:#FF4444;background:rgba(255,68,68,0.13);animation:pulseRed 1.2s infinite;}
+.mic-ring.proc{border-color:var(--gold);animation:pulseGold 1s infinite;}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(255,68,68,.4);}50%{box-shadow:0 0 0 16px rgba(255,68,68,0);}}
+@keyframes pulseGold{0%,100%{box-shadow:0 0 0 0 rgba(212,160,23,.4);}50%{box-shadow:0 0 0 14px rgba(212,160,23,0);}}
+.mic-icon-lbl{font-size:34px;pointer-events:none;}
+#rec-status{text-align:center;font-size:11px;color:rgba(212,160,23,.65);letter-spacing:1px;margin-bottom:7px;}
+
+/* wave */
+.waves{display:flex;align-items:center;gap:3px;justify-content:center;height:28px;margin:4px 0;}
+.waves.hide{visibility:hidden;}
+.w{width:4px;border-radius:2px;background:var(--gold);animation:wv .8s ease-in-out infinite;}
+.w:nth-child(1){animation-delay:0s}.w:nth-child(2){animation-delay:.1s}.w:nth-child(3){animation-delay:.2s}
+.w:nth-child(4){animation-delay:.3s}.w:nth-child(5){animation-delay:.4s}.w:nth-child(6){animation-delay:.3s}.w:nth-child(7){animation-delay:.2s}
+@keyframes wv{0%,100%{height:5px;}50%{height:24px;}}
+
+/* result boxes */
+.rbox{
+  background:rgba(8,3,0,0.82);border:1px solid rgba(212,160,23,0.25);
+  border-radius:11px;padding:13px 14px;margin-top:9px;text-align:left;
+}
+.rlabel{font-size:9.5px;letter-spacing:1.8px;color:rgba(212,160,23,.55);text-transform:uppercase;margin-bottom:5px;}
+.rtext{font-family:'Noto Sans Tamil',sans-serif;font-size:14px;color:var(--text-warm);line-height:1.65;min-height:24px;}
+.reng{font-size:13.5px;color:var(--orange);}
+.conf-row{font-size:9.5px;color:rgba(212,160,23,.5);margin-top:5px;}
+.conf-track{height:3px;background:rgba(212,160,23,.13);border-radius:2px;margin-top:4px;overflow:hidden;}
+.conf-fill{height:3px;background:linear-gradient(90deg,#8B4513,#D4A017);border-radius:2px;transition:width .5s ease;}
+#auto-det{font-size:9.5px;color:rgba(255,107,0,.6);margin-top:3px;}
+
+/* history */
+.hist-wrap{max-height:110px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(212,160,23,.25) transparent;}
+.hist-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(212,160,23,.09);font-size:11px;}
+.hist-item:last-child{border-bottom:none;}
+
+/* ── FOOTER ──────────────────────────────────────── */
+#footer{
+  position:fixed;bottom:7px;left:0;right:0;text-align:center;z-index:50;
+  font-size:9.5px;letter-spacing:1.5px;color:rgba(212,160,23,.3);pointer-events:none;
+}
+
+/* ── MOBILE TWEAKS ───────────────────────────────── */
+@media(max-width:520px){
+  .card{padding:20px 14px 22px;}
+  .title-en{font-size:18px;letter-spacing:2px;}
+  .title-ta{font-size:16px;}
+  #app{padding:14px 8px 26px;}
+}
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div id="bg-overlay"></div>
+<div class="kolam-top"></div>
+<div class="kolam-bot"></div>
+
+<div id="app">
+
+  <!-- ══ SCREEN 1: WELCOME ══════════════════════════ -->
+  <div class="screen active" id="s-welcome">
+    <div class="card">
+      <div class="lamp-row"><div class="lamp-line"></div><span class="lamp">🪔</span><div class="lamp-line"></div></div>
+      <div class="title-ta">திரு என்னும் சொல்லரசன்</div>
+      <div class="title-en">THIRU DIALECT ANALYZER</div>
+      <div style="text-align:center;margin-bottom:10px;">
+        <span class="tag">TAMIL DIALECT VOICE RECOGNITION</span>
+      </div>
+      <div class="divider"></div>
+      <div style="text-align:center;padding:8px 0 12px;">
+        <div style="font-family:'Tiro Tamil',serif;font-size:18px;color:var(--gold);opacity:.9;margin-bottom:4px;">தமிழரின் பயணம்</div>
+        <div style="font-family:'Tiro Tamil',serif;font-size:14px;color:var(--orange);opacity:.8;">தொடரும்...!</div>
+      </div>
+      <div class="divider"></div>
+      <p class="subtitle">A LIVING TRIBUTE TO EVERY TAMIL DIALECT</p>
+      <button class="btn-gold" onclick="go('s-about')">✦ ENTER ✦</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 2: ABOUT ═══════════════════════════ -->
+  <div class="screen" id="s-about">
+    <div class="card">
+      <div class="lamp-row"><div class="lamp-line"></div><span class="lamp">🪔</span><div class="lamp-line"></div></div>
+      <div class="creator-heading">✦ உருவாக்கியவரைப் பற்றி ✦</div>
+      <div class="creator-heading" style="color:var(--orange);font-size:17px;margin-bottom:12px;">நா. முகமது அபுஃபிர்னாஸ்</div>
+      <div class="divider"></div>
+      <div class="about-text">
+        <p>வணக்கம், நான் முகமது அபுபிர்னாஸ். தொழில்நுட்பம் என்பது உலகளாவிய மொழியாக இருக்கலாம், ஆனால் அது பேசும் விதம் நம் மண்ணின் வாசனையோடு இருக்க வேண்டும் என்று நான் எப்போதும் விரும்புவேன்.</p>
+        <br>
+        <p>'Edge AI' தொழில்நுட்பத்தைப் பயன்படுத்தி, வட்டார வழக்குகளை அடையாளம் காணும் வகையில் இந்தச் சாதனத்தை வடிவமைத்துள்ளேன். இது தற்போது ஒரு முன்மாதிரி மட்டுமே. வரும் காலங்களில் உங்கள் கருத்துக்களைக் கொண்டு பல மாற்றங்களையும் முன்னேற்றங்களையும் செய்யத் திட்டமிட்டுள்ளேன். தமிழைத் தொழில்நுட்பத்தோடு இணைக்கும் இந்தப் பயணத்தில் உங்கள் ஆதரவிற்கு மிக்க நன்றி.</p>
+      </div>
+      <div class="divider"></div>
+      <button class="btn-gold" onclick="go('s-mic')">👉🏻 தொடரவும்</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 3: MIC PERMISSION ══════════════════ -->
+  <div class="screen" id="s-mic">
+    <div class="card" style="max-width:420px;margin:auto;">
+      <div class="steps"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+      <span class="perm-icon">🎙️</span>
+      <div class="title-en" style="font-size:19px;margin-bottom:10px;">MICROPHONE ACCESS</div>
+      <div class="perm-text">
+        திரு-பாட்டிற்கு உங்கள் குரலை கேட்க<br>மைக்ரோஃபோன் அனுமதி தேவை.<br><br>
+        <span style="color:rgba(212,160,23,.65);font-size:11px;">(Thiru needs mic access to hear your voice)</span>
+      </div>
+      <button class="btn-gold" onclick="reqMic()">🎤 அனுமதி அளிக்கவும்</button>
+      <div id="mic-msg"></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 4: DIALECT SELECTION ═══════════════ -->
+  <div class="screen" id="s-dialect">
+    <div class="card">
+      <button class="btn-ghost back-btn" onclick="go('s-mic')">← பின்</button>
+      <div class="steps" style="margin-top:4px;"><div class="dot on"></div><div class="dot on"></div><div class="dot"></div></div>
+      <div class="title-en" style="font-size:17px;margin-bottom:3px;">உங்கள் வட்டாரம் தேர்ந்தெடுக்கவும்</div>
+      <div class="subtitle">SELECT YOUR DIALECT REGION</div>
+      <div class="dialect-grid">
+        <button class="d-btn" id="dc-chennai"   onclick="selD('chennai','மெட்ராஸ் பாஷை','Madras Bashai')"><span class="icon">🌊</span>சென்னை<br><small>Madras Bashai</small></button>
+        <button class="d-btn" id="dc-coimbatore" onclick="selD('coimbatore','கோவை தமிழ்','Coimbatore Tamil')"><span class="icon">🏭</span>கோவை<br><small>Kovai Tamil</small></button>
+        <button class="d-btn" id="dc-madurai"   onclick="selD('madurai','மதுரை தமிழ்','Madurai Tamil')"><span class="icon">🏛️</span>மதுரை<br><small>Madurai Tamil</small></button>
+        <button class="d-btn" id="dc-tirunelveli" onclick="selD('tirunelveli','திருநெல்வேலி தமிழ்','Tirunelveli Tamil')"><span class="icon">🎭</span>திருநெல்வேலி<br><small>Nellai Tamil</small></button>
+        <button class="d-btn" id="dc-trichy"    onclick="selD('trichy','திருச்சி தமிழ்','Trichy Tamil')"><span class="icon">🕌</span>திருச்சி<br><small>Trichy Tamil</small></button>
+        <button class="d-btn" id="dc-kanyakumari" onclick="selD('kanyakumari','கன்னியாகுமரி தமிழ்','Kanyakumari Tamil')"><span class="icon">🌅</span>கன்னியாகுமரி<br><small>Kumari Tamil</small></button>
+        <button class="d-btn" id="dc-palakkad"  onclick="selD('palakkad','பாலக்காடு தமிழ்','Palakkad Tamil')"><span class="icon">🌿</span>பாலக்காடு<br><small>Kerala Tamil</small></button>
+        <button class="d-btn" id="dc-telugu"    onclick="selD('telugu','தெலுங்கு கலந்த தமிழ்','Telugu Mixed')"><span class="icon">⭐</span>தெலுங்கு கலந்த<br><small>Telugu Mixed</small></button>
+        <button class="d-btn" id="dc-ilangai"   onclick="selD('ilangai','இலங்கை தமிழ்','Eelam Tamil')"><span class="icon">🌴</span>இலங்கை தமிழ்<br><small>Eelam Tamil</small></button>
+      </div>
+      <div style="font-size:10.5px;color:rgba(255,107,0,.65);text-align:center;margin-top:6px;">
+        💡 பேசும்போது தானாக வட்டாரம் கண்டறியப்படும் (Auto-detect enabled)
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 5: VOICE ════════════════════════════ -->
+  <div class="screen" id="s-voice">
+    <div class="card" style="padding:18px 16px 20px;">
+      <button class="btn-ghost back-btn" onclick="go('s-dialect')">← திரும்பு</button>
+      <div class="steps" style="margin-top:4px;"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div>
+
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;">
+        <div class="title-en" style="font-size:15px;margin:0;">THIRU-BOT</div>
+        <span class="dialect-badge" id="d-badge">—</span>
+      </div>
+
+      <div class="mic-ring" id="mic-ring" onclick="toggleRec()">
+        <span class="mic-icon-lbl" id="mic-lbl">🎙️</span>
+      </div>
+      <div id="rec-status">தொடங்க மைக்ரோஃபோனை அழுத்தவும்</div>
+
+      <div class="waves hide" id="waves">
+        <div class="w"></div><div class="w"></div><div class="w"></div>
+        <div class="w"></div><div class="w"></div><div class="w"></div><div class="w"></div>
+      </div>
+
+      <div class="rbox">
+        <div class="rlabel">🎤 கேட்டது (HEARD)</div>
+        <div class="rtext" id="r-raw">— பேசத் தொடங்குங்கள் —</div>
+        <div id="auto-det"></div>
+      </div>
+      <div class="rbox">
+        <div class="rlabel">📖 சரியான தமிழ் (STANDARD TAMIL)</div>
+        <div class="rtext" id="r-std">—</div>
+      </div>
+      <div class="rbox">
+        <div class="rlabel">🌐 ஆங்கில பொருள் (ENGLISH MEANING)</div>
+        <div class="rtext reng" id="r-eng">—</div>
+        <div class="conf-row" id="conf-lbl"></div>
+        <div class="conf-track"><div class="conf-fill" id="conf-bar" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="rlabel" style="margin-bottom:5px;">📜 வரலாறு (HISTORY)</div>
+        <div class="hist-wrap" id="hist-list">
+          <div style="font-size:11px;color:rgba(212,160,23,.3);text-align:center;padding:6px;">No history yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<div id="footer">✦ THIRU © N. MOHAMED ABUFIRNAS ✦ தமிழ் கலாச்சாரம் வாழட்டும் ✦</div>
+
+<script>
+// ── INJECT UPLOADED BACKGROUND IMAGE ─────────────
+// Kanyakumari image embedded as the permanent background
+// (The user's uploaded photo is the Thiruvalluvar statue at Kanyakumari sunset)
+// We set it directly via a stable Wikimedia URL matching the uploaded photo scene
+const BG_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Thiruvalluvar_Statue_Kanyakumari_2.jpg/1280px-Thiruvalluvar_Statue_Kanyakumari_2.jpg';
+(function(){
+  const bg = document.getElementById('bg');
+  const img = new Image();
+  img.onload = () => {
+    bg.style.backgroundImage = `url('${BG_URL}')`;
+    bg.style.backgroundSize = 'cover';
+    bg.style.backgroundPosition = 'center center';
+  };
+  img.onerror = () => {
+    // fallback – use a warm dark gradient if network fails
+    bg.style.background = 'radial-gradient(ellipse at 65% 75%, #3a1800 0%, #0d0500 70%)';
+  };
+  img.src = BG_URL;
+})();
+
+// ── SCREEN ROUTER ─────────────────────────────────
+const SCREEN_IDS = ['s-welcome','s-about','s-mic','s-dialect','s-voice'];
+function go(id){
+  SCREEN_IDS.forEach(s=>{
+    const el=document.getElementById(s);
+    el.classList.remove('active');
+  });
+  const t=document.getElementById(id);
+  t.classList.add('active');
+  // restart animation
+  t.style.animation='none';
+  requestAnimationFrame(()=>{t.style.animation='';});
+}
+
+// ── MIC PERMISSION ────────────────────────────────
+async function reqMic(){
+  const msg=document.getElementById('mic-msg');
+  msg.style.color='rgba(212,160,23,.7)';
+  msg.textContent='அனுமதி கோருகிறது...';
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({audio:true});
+    s.getTracks().forEach(t=>t.stop());
+    msg.style.color='#4CAF50';
+    msg.textContent='✓ மைக்ரோஃபோன் அனுமதி பெறப்பட்டது!';
+    setTimeout(()=>go('s-dialect'),800);
+  }catch(e){
+    msg.style.color='var(--orange)';
+    msg.textContent='⚠️ அனுமதி மறுக்கப்பட்டது. Browser settings சரிபாருங்கள்.';
+  }
+}
+
+// ── DIALECT DATA ──────────────────────────────────
+const DIALECT_DATA={
+  chennai:{label:'மெட்ராஸ் பாஷை',slang:['da','di','dei','ey','macha','machan','poda','podi','loosu','figure','mass','scene','area','semma','vera level','baasha','kandippa','aama','illa','seri','thala','boss','gethu','kethu','sappa','mokke','nalla irukku','enna da panra','summa iru','over ah panra','light ah','chance illa','correct ah','massu da']},
+  coimbatore:{label:'கோவை தமிழ்',slang:['baa','vaanga','poanga','enna paa','enna ma','seri paa','seri ma','inga','anga','eppidi','ippadi','apdi','sollunga','pannunga','saaptingla','sapdala','rendu','moonu','nalla irukku','romba nalla','correct aa','parunga','ketkudha','illaya','covai style','summa','super aa irukku']},
+  madurai:{label:'மதுரை தமிழ்',slang:['dee','dei','maama','machan','nee','vaa','po','sollu','pannu','paaru','enna da','onnum illa','romba','ippo','apram','inga','anga','evlo','ippadi','apdiye','summa','adiye','sethuruvaen','loosu paiya','massu','vera level','kandippa','saptiya','velaiku po','seri da','dei macha']},
+  tirunelveli:{label:'திருநெல்வேலி தமிழ்',slang:['eley','yemla','enna le','vaa le','po le','paaru le','onnum illa le','romba le','seri le','inga le','anga le','saptiya le','enna panra le','ippadi le','apdi le','dei le','machan le','maama le','nalla irukku le','summa le','evlo le','ippo le','apram le','kandippa le','correct le','sari le','pesatha le','kelu le','pannatha le','varutha le']},
+  trichy:{label:'திருச்சி தமிழ்',slang:['ra','ba','vaa','po','enna','sollunga','pannunga','inga','anga','trichy','thiruchy','seri','aama','illa','parunga','kelunga','saptingla','sapdala','romba','nalla','correct','ippadi','apdi','summa','evlo','ippo','apram','dei','machan','maama','nalla irukku','super','chance illa','mass']},
+  kanyakumari:{label:'கன்னியாகுமரி தமிழ்',slang:['nee','naan','vaa','po','choll','achan','amma','dee','dei','machan','maapla','inga','anga','ippo','apram','evlo','romba','seri','aama','illa','nalla','super','kanyakumari','south','saptiya','pannuva','solluva','kelu','parru','correct','massu','summa']},
+  palakkad:{label:'பாலக்காடு தமிழ்',slang:['alle','athe','ente','poda','podi','vaa','po','aane','undo','illa','seri','nalla','ivide','avide','entha','cheyyu','parayu','kelu','sapicho','nanni','shari','kollam','valare nalla','ippo','pinne','machan','bro','eda','edi','sherikkum','correct aanu','summa','mass']},
+  telugu:{label:'தெலுங்கு கலந்த தமிழ்',slang:['ayya','babu','anna','akka','ra','amma','baaga','cheppandi','cheppu','estundi','ledu','undi','inka','emi','enduku','ekkada','ikkada','akkada','vastundi','povadam','tinava','tinaledu','chala','manchidi','correct ga','sare','parledu','baga undi','super anna','mass ra','scene enti','light teesuko']},
+  ilangai:{label:'இலங்கை தமிழ்',slang:['podaa','podi','enna','eppa','thambii','akka','anna','machan','machaal','lankai','eelam','yaarl','inga','anga','ippo','apram','evlo','romba','seri','aama','illa','saptiya','sapdala','pannura','sollura','kelu','paaru','correct','nalla irukku','super','mass','summa','dei','dee']}
+};
+
+// ── MEANING MAP ───────────────────────────────────
+const MM=[
+  // LIGHT / FAN
+  {p:['light','விளக்கு'],a:['on','போடு','podu','switch on'],s:'விளக்கை ஏற்றுங்கள்',e:'Turn on the light',c:95},
+  {p:['light','விளக்கு'],a:['off','அணை','switch off'],s:'விளக்கை அணையுங்கள்',e:'Turn off the light',c:95},
+  {p:['fan','விசிறி'],a:['on','போடு'],s:'விசிறியை இயக்குங்கள்',e:'Turn on the fan',c:93},
+  {p:['fan','விசிறி'],a:['off','அணை'],s:'விசிறியை நிறுத்துங்கள்',e:'Turn off the fan',c:93},
+  // POSITIVE EXPRESSIONS
+  {p:['semma','vera level','mass'],a:[],s:'மிகவும் அருமை!',e:'Awesome!',c:98},
+  {p:['super','சூப்பர்'],a:[],s:'மிகவும் நல்லது!',e:'Super! Great!',c:99},
+  {p:['kalakkal','கலக்கல்'],a:[],s:'மிகவும் சிறந்தது!',e:'Rocking! Outstanding!',c:97},
+  {p:['kethu','gethu','கெத்து'],a:[],s:'மிகவும் ஸ்டைலானது!',e:'Stylish! Cool!',c:96},
+  {p:['chance illa'],a:[],s:'மிகவும் அருமை!',e:'No chance (awesome)!',c:96},
+  {p:['pakka','பக்கா'],a:[],s:'உண்மையான / தரமான',e:'Genuine / Quality stuff',c:93},
+  {p:['veri','வெறி'],a:[],s:'மிகுந்த உற்சாகம்!',e:'Mad energy / intense enthusiasm!',c:94},
+  {p:['massu','mass'],a:[],s:'பிரபலமான',e:'Mass style / impressive',c:92},
+  {p:['vera'],a:[],s:'வேறுபட்ட',e:'Different level',c:90},
+  {p:['summa'],a:[],s:'வெறுமனே',e:'Just casually / for no reason',c:93},
+  {p:['scene'],a:[],s:'நிலைமை',e:'Situation / scene',c:90},
+  // NEGATIVE / REACTIONS
+  {p:['poda','போடா','podi'],a:[],s:'போ அங்கே!',e:'Get lost! (mild slang)',c:88},
+  {p:['loosu','lusu','லூசு'],a:[],s:'சில்லறை மனிதர்',e:'Silly / crazy person (teasing)',c:90},
+  {p:['mokke'],a:[],s:'பொருள் இல்லாதது',e:'Useless / boring',c:90},
+  {p:['sappa'],a:[],s:'சுவையற்றது',e:'Boring / dull',c:89},
+  {p:['over'],a:['panra'],s:'அதிகமாக செய்கிறாய்',e:'Overdoing',c:90},
+  {p:['cinema','சினிமா'],a:['pannatha'],s:'நாடகம் ஆடாதே',e:'Stop being dramatic!',c:89},
+  // PEOPLE
+  {p:['macha','machan','mavaa','மாவா'],a:[],s:'நண்பனே!',e:'Buddy! Dear friend!',c:92},
+  {p:['maama'],a:[],s:'நண்பனே!',e:'Dude! (informal)',c:91},
+  {p:['thambi','தம்பி'],a:[],s:'இளைய சகோதரன்',e:'Younger brother',c:95},
+  {p:['anna','அண்ணா'],a:[],s:'மூத்த சகோதரன்',e:'Elder brother / sir!',c:95},
+  {p:['akka'],a:[],s:'அக்கா',e:'Elder sister',c:95},
+  {p:['amma','அம்மா'],a:[],s:'அன்னையே!',e:'Mother / Oh my!',c:99},
+  {p:['bro'],a:[],s:'சகோதரன்',e:'Bro',c:90},
+  {p:['dei'],a:[],s:'ஏய்',e:'Hey! (male)',c:88},
+  {p:['dee'],a:[],s:'ஏய் (பெண்)',e:'Hey! (female)',c:88},
+  // BASIC COMMANDS
+  {p:['vaa','வா'],a:[],s:'வாருங்கள்!',e:'Come here!',c:91},
+  {p:['po','போ'],a:[],s:'போகுங்கள்!',e:'Go away!',c:90},
+  {p:['ukkaru'],a:[],s:'உட்காருங்கள்',e:'Sit down',c:90},
+  {p:['nillu'],a:[],s:'நிற்கவும்',e:'Stop',c:89},
+  {p:['kelu'],a:[],s:'கேளுங்கள்',e:'Listen',c:90},
+  {p:['pannu'],a:[],s:'செய்',e:'Do it',c:90},
+  {p:['sollu'],a:[],s:'சொல்',e:'Say it / Tell me',c:90},
+  {p:['paaru','பாரு','paa'],a:[],s:'பாருங்கள்!',e:'Look / See this!',c:91},
+  {p:['odi'],a:[],s:'ஓடு',e:'Run',c:94},
+  {p:['nadakku'],a:[],s:'நட',e:'Walk',c:94},
+  {p:['iru'],a:[],s:'இரு',e:'Stay / Be here',c:94},
+  {p:['vidu'],a:[],s:'விடு',e:'Leave it / Let go',c:94},
+  // QUESTIONS
+  {p:['enna','என்ன'],a:['panra','பண்ற','pannu'],s:'நீ என்ன செய்கிறாய்?',e:'What are you doing?',c:89},
+  {p:['saptiya'],a:[],s:'சாப்பிட்டாயா?',e:'Did you eat?',c:94},
+  {p:['enga'],a:[],s:'எங்கே?',e:'Where?',c:95},
+  {p:['evlo'],a:[],s:'எவ்வளவு?',e:'How much?',c:95},
+  {p:['epdi'],a:[],s:'எப்படி?',e:'How?',c:95},
+  {p:['theriyuma','தெரியுமா'],a:[],s:'உங்களுக்கு தெரியுமா?',e:'Do you know?',c:91},
+  // AGREEMENT / DISAGREEMENT
+  {p:['seri','சரி','correct'],a:[],s:'சரி, ஒப்புக்கொள்கிறேன்',e:'Okay / Alright / Agreed',c:97},
+  {p:['aama','ஆமா'],a:[],s:'ஆம், சரிதான்',e:'Yes / That is right',c:98},
+  {p:['illa','இல்ல'],a:[],s:'இல்லை',e:'No / Not there',c:98},
+  {p:['pannaadha','pannatha','பண்ணாத'],a:[],s:'செய்யாதே!',e:"Don't do it!",c:88},
+  // QUALITY
+  {p:['nalla','நல்ல'],a:[],s:'நல்லது',e:'Good / Nice',c:97},
+  {p:['romba'],a:[],s:'மிகவும்',e:'Very / So much',c:96},
+  // ACTIONS / DAILY
+  {p:['velai','வேலை'],a:['pannu','பண்ணு'],s:'வேலை செய்யுங்கள்',e:'Do your work!',c:92},
+  {p:['sapdu'],a:[],s:'சாப்பிடு',e:'Eat',c:94},
+  {p:['kudi'],a:[],s:'குடி',e:'Drink',c:94},
+  {p:['thoongu'],a:[],s:'தூங்கு',e:'Sleep',c:94},
+  {p:['ezhundru'],a:[],s:'எழுந்திரு',e:'Wake up',c:94},
+  {p:['pidichirukku'],a:[],s:'பிடித்துள்ளது',e:'Like it / I like this',c:94},
+  {p:['pidikala'],a:[],s:'பிடிக்கவில்லை',e:"Don't like it",c:94},
+  // LOCATION
+  {p:['inga'],a:[],s:'இங்கே',e:'Here',c:95},
+  {p:['anga'],a:[],s:'அங்கே',e:'There',c:95},
+  {p:['veetuku','வீட்டுக்கு'],a:['po','poo'],s:'வீட்டிற்கு போ',e:'Go home!',c:92},
+  {p:['ulley'],a:[],s:'உள்ளே',e:'Inside',c:94},
+  {p:['veliye'],a:[],s:'வெளியே',e:'Outside',c:94},
+  // TIME
+  {p:['ippo'],a:[],s:'இப்போது',e:'Now',c:95},
+  {p:['apram'],a:[],s:'பிறகு',e:'Later / After',c:95},
+  {p:['munadi'],a:[],s:'முன்பு',e:'Before',c:94},
+  {p:['pinadi'],a:[],s:'பின்னால்',e:'Behind / After',c:94},
+  // EMOTIONS
+  {p:['bayama'],a:[],s:'பயமாக இருக்கிறது',e:'Feeling afraid / scared',c:94},
+  {p:['kovam'],a:[],s:'கோபம்',e:'Angry',c:94},
+  {p:['sandhosham'],a:[],s:'சந்தோஷம்',e:'Happy',c:94},
+  {p:['kashtam'],a:[],s:'கஷ்டம்',e:'Difficult / painful',c:94},
+  // TRANSPORT / COMMON
+  {p:['traffic','ட்ராஃபிக்'],a:[],s:'வழியில் நெரிசல் உள்ளது',e:'Traffic is heavy',c:94},
+  {p:['level'],a:[],s:'நிலை',e:'Level',c:85},
+  {p:['figure'],a:[],s:'பெண்',e:'Girl (slang)',c:85},
+];
+
+// ── DIALECT SELECTION ─────────────────────────────
+let selDialect='auto', selDName='Auto Detect';
+function selD(id,name,eng){
+  document.querySelectorAll('.d-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('dc-'+id).classList.add('sel');
+  selDialect=id; selDName=name;
+  setTimeout(()=>{
+    document.getElementById('d-badge').textContent=eng;
+    go('s-voice');
+    setupRec();
+  },280);
+}
+
+// ── SPEECH RECOGNITION ────────────────────────────
+let rec=null, isRec=false, histItems=[];
+
+function setupRec(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('rec-status').textContent='⚠️ Chrome/Edge only. Try a different browser.';return;}
+  rec=new SR();
+  rec.continuous=false; rec.interimResults=true; rec.lang='ta-IN';
+  rec.onresult=onResult;
+  rec.onend=()=>{if(isRec){isRec=false;micUI(false);}};
+  rec.onerror=(e)=>{isRec=false;micUI(false);if(e.error!=='no-speech')document.getElementById('rec-status').textContent='⚠️ Error: '+e.error;};
+}
+
+function toggleRec(){
+  if(!rec)setupRec();
+  if(!rec)return;
+  if(isRec){rec.stop();isRec=false;micUI(false);}
+  else{try{rec.start();isRec=true;micUI(true);document.getElementById('r-raw').textContent='...';}catch(e){}}
+}
+
+function micUI(on){
+  const ring=document.getElementById('mic-ring'),lbl=document.getElementById('mic-lbl'),
+        st=document.getElementById('rec-status'),wv=document.getElementById('waves');
+  if(on){ring.classList.add('rec');lbl.textContent='⏹';wv.classList.remove('hide');st.textContent='🔴 பதிவாகிறது... (Recording)';}
+  else{ring.classList.remove('rec','proc');lbl.textContent='🎙️';wv.classList.add('hide');st.textContent='தொடங்க மைக்ரோஃபோனை அழுத்தவும்';}
+}
+
+function onResult(ev){
+  let interim='',final='';
+  for(let i=ev.resultIndex;i<ev.results.length;i++){
+    const t=ev.results[i][0].transcript;
+    if(ev.results[i].isFinal)final+=t; else interim+=t;
+  }
+  const heard=(final||interim).trim();
+  if(heard){
+    document.getElementById('r-raw').textContent=heard;
+    if(final)processText(final.trim(),ev.results[0][0].confidence||0.85);
+  }
+}
+
+// ── DIALECT AUTO-DETECT ───────────────────────────
+function detectDialect(text){
+  const low=text.toLowerCase();
+  let best=null,bestScore=0;
+  for(const[k,d] of Object.entries(DIALECT_DATA)){
+    const sc=d.slang.reduce((s,w)=>s+(low.includes(w)?1:0),0);
+    if(sc>bestScore){bestScore=sc;best=k;}
+  }
+  return bestScore>0?best:null;
+}
+
+// ── TEXT PROCESSING ───────────────────────────────
+function processText(text,rawConf){
+  const low=text.toLowerCase();
+  const detected=detectDialect(low);
+  const effectiveD=selDialect!=='auto'?selDialect:(detected||'chennai');
+
+  if(detected&&DIALECT_DATA[detected]){
+    document.getElementById('auto-det').textContent='🔍 Auto-detected: '+DIALECT_DATA[detected].label;
+    document.getElementById('d-badge').textContent=DIALECT_DATA[detected].label;
+  }
+
+  let match=null;
+  for(const m of MM){
+    const hasP=m.p.some(p=>low.includes(p.toLowerCase()));
+    if(!hasP)continue;
+    if(m.a.length===0){match=m;break;}
+    if(m.a.some(a=>low.includes(a.toLowerCase()))){match=m;break;}
+  }
+
+  if(match){
+    set('r-std',match.s);
+    set('r-eng',match.e);
+    const conf=Math.min(99,Math.round(match.c*(0.9+rawConf*0.1)));
+    setConf(conf);
+    addHist(text,match.e,conf);
+  }else{
+    set('r-std',text+' (தெளிவுபடுத்தல் தேவை)');
+    set('r-eng','Processing with AI...');
+    setConf(0);
+    callAI(text,effectiveD);
+  }
+}
+
+function set(id,val){document.getElementById(id).textContent=val;}
+function setConf(c){
+  document.getElementById('conf-lbl').textContent=c?`நம்பகத்தன்மை (Confidence): ${c}%`:'';
+  document.getElementById('conf-bar').style.width=c+'%';
+}
+
+// ── AI FALLBACK ───────────────────────────────────
+async function callAI(text,dialect){
+  const dname=DIALECT_DATA[dialect]?DIALECT_DATA[dialect].label:'Tamil';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:`You are an expert Tamil dialect interpreter. The user spoke in ${dname} Tamil dialect.\n\nText heard: "${text}"\nDialect: ${dname}\n\nProvide a JSON response with ONLY these keys (no markdown, no extra text):\n{\n  "standard_tamil": "Standard formal Tamil equivalent",\n  "english": "English meaning or translation",\n  "confidence": 85\n}\n\nRules:\n- Interpret slang, regional words, mixed language naturally\n- Standard Tamil should be formal written Tamil\n- English should be natural translation\n- confidence is 0-100`}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content.map(c=>c.text||'').join('');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    set('r-std',parsed.standard_tamil||text);
+    set('r-eng',parsed.english||'Could not interpret');
+    const conf=parsed.confidence||80;
+    setConf(conf);
+    addHist(text,parsed.english||'?',conf);
+  }catch(e){
+    set('r-eng','Interpretation unavailable. Try speaking clearly.');
+  }
+}
+
+// ── HISTORY ───────────────────────────────────────
+function addHist(orig,meaning,conf){
+  histItems.unshift({orig,meaning,conf});
+  if(histItems.length>10)histItems.pop();
+  document.getElementById('hist-list').innerHTML=histItems.map(h=>`
+    <div class="hist-item">
+      <span style="color:rgba(255,220,150,.7);max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h.orig}</span>
+      <span style="color:var(--orange);font-size:10px;">${h.meaning.slice(0,28)}</span>
+      <span style="color:rgba(212,160,23,.45);font-size:10px;">${h.conf}%</span>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
